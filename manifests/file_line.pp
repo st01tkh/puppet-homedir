@@ -1,4 +1,5 @@
 define homedir::file_line(
+    $user = $::id,
     $homedir_path = undef,
     $rel_path = undef,
     $group = undef,
@@ -18,10 +19,11 @@ define homedir::file_line(
 ) {
   $fn = "virtualenvwrapper::homedir_file"
 
-  if defined(Homedir::File[$name]) {
-    notify {"$fn Homedir::File[$name] is already defined": }
-  } else {
-    homedir::file {"$name":
+  #if defined(Homedir::File[$user]) {
+  #  notify {"$fn Homedir::File[$user] is already defined": }
+  #} else {
+    homedir::file {"$user:~/$rel_path":
+      user => $user,
       homedir_path => $homedir_path,
       rel_path => $rel_path,
       group => $group,
@@ -31,7 +33,7 @@ define homedir::file_line(
       content => $content,
       require => $require,
     }
-  }
+  #}
 
   if $homedir_path {
     validate_re($homedir_path, '^/')
@@ -41,18 +43,18 @@ define homedir::file_line(
 
   if $homedir_path {
     $homedir_path_real = $homedir_path
-  } elsif $name == 'root' {
+  } elsif $user == 'root' {
     $homedir_path_real = $::osfamily ? {
       'Solaris' => '/',
       default   => '/root',
     }
   } else {
     $homedir_path_real = $::osfamily ? {
-      'Solaris' => "/export/home/${name}",
-      default   => "/home/${name}",
+      'Solaris' => "/export/home/${user}",
+      default   => "/home/${user}",
     }
   }
-  notify {"$fn homedir_path_real: $homedir_path_real": }
+  #notify {"$fn homedir_path_real: $homedir_path_real": }
 
 
   if $rel_path {
@@ -72,7 +74,7 @@ define homedir::file_line(
     if $line_name {
       $line_name_real = $line_name
     } else {
-      $line_name_real = "line $line in $path of user $name"
+      $line_name_real = "line $line in $path of user $user"
     }
     file_line { "$line_name_real":
       ensure => $line_ensure,

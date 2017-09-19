@@ -4,9 +4,16 @@ $username = 'user01'
 #    ensure => present
 #}
 
-homedir::file{"$username": 
+homedir::file{"$username:~/TestFile":
+    user => "$username",
     rel_path => 'TestFile',
     content => "Test file content",
+}
+
+homedir::file{"$username:~/TestFile2": 
+    user => "$username",
+    rel_path => 'TestFile2',
+    content => "Test file content2",
 }
 
 #

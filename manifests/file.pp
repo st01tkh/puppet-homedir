@@ -1,4 +1,5 @@
 define homedir::file(
+    $user = $::id,
     $homedir_path = undef,
     $rel_path = undef,
     $group = undef,
@@ -12,28 +13,28 @@ define homedir::file(
 ) {
   $fn = "homedir::file"
 
-  if defined(Homedir[$name]) {
-    notify {"$fn Homedir[$name] is already defined": }
+  if defined(Homedir[$user]) {
+    notify {"$fn Homedir[$user] is already defined": }
   } else {
-    homedir {"$name":
+    homedir {"$user":
       path => $homedir_path,
     }
   }
 
   if $homedir_path {
     $homedir_path_real = $homedir_path
-  } elsif $name == 'root' {
+  } elsif $user == 'root' {
     $homedir_path_real = $::osfamily ? {
       'Solaris' => '/',
       default   => '/root',
     }
   } else {
     $homedir_path_real = $::osfamily ? {
-      'Solaris' => "/export/home/${name}",
-      default   => "/home/${name}",
+      'Solaris' => "/export/home/${user}",
+      default   => "/home/${user}",
     }
   }
-  notify {"$fn homedir_path_real: $homedir_path_real": }
+  #notify {"$fn homedir_path_real: $homedir_path_real": }
 
   if $rel_path {
     #validate_re($rel_path, '^/')
@@ -52,7 +53,7 @@ define homedir::file(
     if $group {
       $group_real = $group
     } else {
-      $group_real = $name
+      $group_real = $user
     }
 
     if defined(Group[$group_real]) {
@@ -65,7 +66,7 @@ define homedir::file(
 
     file { "$path":
       ensure => $ensure,
-      owner  => $name,
+      owner  => $user,
       group  => $group_real,
       mode   => $mode,
       target => $target,
@@ -76,7 +77,7 @@ define homedir::file(
     }
     #fail("$fn File[$path_real] should be defined")
   }
-  #ensure_resource('file', $name, {'ensure' => 'present'})
+  #ensure_resource('file', $user, {'ensure' => 'present'})
 }
 
 #

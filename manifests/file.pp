@@ -14,7 +14,7 @@ define homedir::file(
   $fn = "homedir::file"
 
   if defined(Homedir[$user]) {
-    notify {"$fn Homedir[$user] is already defined": }
+    #notify {"$fn Homedir[$user] is already defined": }
   } else {
     homedir {"$user":
       path => $homedir_path,
@@ -45,10 +45,10 @@ define homedir::file(
   }
 
   $path = "$homedir_path_real/$rel_path"
-  notify {"$fn path: $path": }
+  #notify {"$fn path: $path": }
 
   if defined(File[$path]) {
-    notify {"$fn File[$path] is already defined": }
+    #notify {"$fn File[$path] is already defined": }
   } else {
     if $group {
       $group_real = $group
@@ -57,7 +57,7 @@ define homedir::file(
     }
 
     if defined(Group[$group_real]) {
-      notify {"$fn Group[$group_real] is already defined": }
+      #notify {"$fn Group[$group_real] is already defined": }
     } else {
       group { "$group_real":
         ensure => present,

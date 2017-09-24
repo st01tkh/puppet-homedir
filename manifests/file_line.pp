@@ -1,36 +1,43 @@
 define homedir::file_line(
-  $file_name = undef,
+  # local parameters
   $user = $::id,
   $homedir_path = undef,
   $rel_path = undef,
+
+  # changed file resource parameters
+  $file_name = undef,
+
+  # forwarded file resource parameters
+  $ensure = 'present',
   $group = undef,
   $mode  = undef,
-  $ensure = 'present',
   $source = undef,
   $content = undef,
-  $require = undef,
-  
+
+  # changed file_line resource parameters
   $line_name = undef,
   $line_ensure       = undef,
+
+  # forwarded file_line resource parameters
+  $after = undef,
+  $encoding = undef,
   $line              = undef,
   $match             = undef,
   $match_for_absence = undef,
   $multiple          = undef,
   $replace           = undef,
-  $before = undef,
-  $after = undef,
-  $line_encoding     = undef,
+
+  # meteparameters
 ) {
   $fn = "virtualenvwrapper::homedir_file"
 
-  #if defined(Homedir::File[$user]) {
-  #  notify {"$fn Homedir::File[$user] is already defined": }
-  #} else {
   if $file_name {
     $file_name_real = $file_name
   } else {
     $file_name_real = "$name $user:~/$rel_path"
   }
+
+  if !defined(Homedir::File[$file_name_real]) {
     homedir::file {"$file_name_real":
       user => $user,
       homedir_path => $homedir_path,
@@ -42,11 +49,10 @@ define homedir::file_line(
       content => $content,
       require => $require,
     }
-  #}
+  }
 
   if $homedir_path {
     validate_re($homedir_path, '^/')
-    # If the home directory is not / (root on solaris) then disallow trailing slashes.
     validate_re($homedir_path, '^/$|[^/]$')
   }
 
@@ -63,40 +69,36 @@ define homedir::file_line(
       default   => "/home/${user}",
     }
   }
-  #notify {"$fn homedir_path_real: $homedir_path_real": }
-
 
   if $rel_path {
-    #validate_re($rel_path, '^/')
-    # If the home directory is not / (root on solaris) then disallow trailing slashes.
     validate_re($rel_path, '^[^/]')
   } else {
     fail("$fn rel_path is not set")
   }
 
-  $path = "$homedir_path_real/$rel_path"
-  #notify {"$fn path: $path": }
+  $path_real = "$homedir_path_real/$rel_path"
 
-  if defined(File_Line[$path]) {
-    notify {"$fn File_Line[$path] is already defined": }
-  } else {
+  if !defined(File_Line[$path_real]) {
     if $line_name {
       $line_name_real = $line_name
     } else {
-      $line_name_real = "line $line in $path of user $user"
+      $line_name_real = "line $line in $path_real of user $user"
     }
+
     file_line { "$line_name_real":
+      # changed file_line resource parameters
       ensure => $line_ensure,
-      path   => $path,
-      line   => $line,
-      before => $before,
+
+      # forwarded file_line resource parameters
       after => $after,
-      match  => $match,
+      encoding => $encoding,
+      path   => $path_real,
+      line => $line,          
+      match => $match,
       match_for_absence => $match_for_absence,
       multiple => $multiple,
       replace => $replace,
     }
-    #fail("$fn File[$path_real] should be defined")
   }
   
 }

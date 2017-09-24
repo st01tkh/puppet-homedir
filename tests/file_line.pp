@@ -5,6 +5,7 @@ $username = 'user01'
 #}
 
 homedir::file_line{"$username": 
+    user => $username,
     content => 'Some content',
     rel_path => 'TestFile',
     line_ensure => 'present',
